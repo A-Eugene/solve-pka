@@ -70,3 +70,5 @@ The script executes a three-step pipeline:
     - If specified, replaces the `ELAPSED` attribute in the XML to synthesize a custom time (automatically converting input seconds to the required milliseconds).
     - Saves the corrected XML as `_solved.xml`.
 3.  **Repacket**: Encrypts the solved XML back into a functional `.pka` file.
+
+## Tested on Cisco Packet Tracker v7 and v9. Some older versions might fail to decompile.
