@@ -81,4 +81,4 @@ def main():
             os.remove(solved_xml)
 
 if __name__ == "__main__":
-    main()
+    main()
