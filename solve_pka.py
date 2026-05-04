@@ -4,7 +4,7 @@ import sys
 import argparse
 import subprocess
 
-def solve_xml_logic(input_xml, output_xml):
+def solve_xml_logic(input_xml, output_xml, elapsed_time=None):
     with open(input_xml, 'r', encoding='utf-8', errors='ignore') as f:
         content = f.read()
 
@@ -25,6 +25,12 @@ def solve_xml_logic(input_xml, output_xml):
     # This copies everything: devices, links, configs, and grading metadata.
     new_content = content.replace(student_block, answer_block, 1)
     
+    # Synthesize elapsed time if requested (input is in seconds, XML uses milliseconds)
+    if elapsed_time is not None:
+        ms_time = elapsed_time * 1000
+        print(f"[*] Synthesizing elapsed time to {elapsed_time} seconds ({ms_time} ms)...")
+        new_content = re.sub(r'ELAPSED="\d+"', f'ELAPSED="{ms_time}"', new_content)
+
     with open(output_xml, 'w', encoding='utf-8') as f:
         f.write(new_content)
     return True
@@ -33,6 +39,7 @@ def main():
     parser = argparse.ArgumentParser(description="Unpacket, Solve, and Repacket a Cisco Packet Tracer Activity.")
     parser.add_argument("input_file", help="Path to the .pka or .pkt file.")
     parser.add_argument("-o", "--output", help="Path to the output .pka file. Defaults to <input>_SOLVED.pka")
+    parser.add_argument("-t", "--elapsed", type=int, help="Synthesize elapsed time (in seconds).")
     
     args = parser.parse_args()
     input_path = args.input_file
@@ -54,7 +61,7 @@ def main():
 
         # 2. Solve
         print(f"[*] Solving XML logic...")
-        if not solve_xml_logic(temp_xml, solved_xml):
+        if not solve_xml_logic(temp_xml, solved_xml, elapsed_time=args.elapsed):
             sys.exit(1)
 
         # 3. Repacket
@@ -74,4 +81,4 @@ def main():
             os.remove(solved_xml)
 
 if __name__ == "__main__":
-    main()
+    main()

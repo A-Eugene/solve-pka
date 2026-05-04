@@ -40,12 +40,22 @@ You can specify a custom output path using the `-o` flag:
 python solve_pka.py lab.pka -o my_fixed_lab.pka
 ```
 
+### Synthesizing Elapsed Time
+
+If you want the activity to show a specific elapsed time (e.g., 5 minutes), use the `-t` or `--elapsed` flag:
+
+```bash
+# Sets elapsed time to 300 seconds (5 minutes)
+python solve_pka.py lab.pka -t 300
+```
+
 ## Command Line Options
 
 | Option | Description |
 |--------|-------------|
 | input_file | Input `.pka` file (required) |
 | -o, --output | Output `.pka` path (optional) |
+| -t, --elapsed | Synthesize elapsed time in seconds (optional) |
 | -h, --help | Show help message |
 
 ## How It Works
@@ -54,8 +64,9 @@ The script executes a three-step pipeline:
 
 1.  **Unpacket**: Decrypts the `.pka` file into an intermediate XML format (`_temp.xml`).
 2.  **Solve**:
-    - Parses the XML and identifies the "Answer Key" section (Block 3).
-    - Extracts the correct `DEVICES` and `LINKS` structures from the Answer Key.
-    - Replaces the corresponding sections in the "Current" layer (Block 1).
+    - Parses the XML and identifies all `PACKETTRACER5` blocks.
+    - Replaces the **Student Block** (Block 1) with the **Answer Key Block** (the last block).
+    - This ensures all devices, links, configurations, and grading metadata are perfectly synchronized.
+    - If specified, replaces the `ELAPSED` attribute in the XML to synthesize a custom time (automatically converting input seconds to the required milliseconds).
     - Saves the corrected XML as `_solved.xml`.
 3.  **Repacket**: Encrypts the solved XML back into a functional `.pka` file.
