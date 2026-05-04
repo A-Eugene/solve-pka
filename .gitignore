@@ -1,4 +1,6 @@
 *.pka
 *.pkt
 *.xml
+scratch
+__pycache__
 ptexplorer.py

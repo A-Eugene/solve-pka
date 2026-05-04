@@ -8,28 +8,22 @@ def solve_xml_logic(input_xml, output_xml):
     with open(input_xml, 'r', encoding='utf-8', errors='ignore') as f:
         content = f.read()
 
-    blocks = re.split(r'(<PACKETTRACER5>)', content)
-    if len(blocks) < 7:
-        print("[-] Error: Could not find enough network blocks in XML.")
+    # Find all complete <PACKETTRACER5> ... </PACKETTRACER5> blocks using regex
+    # Usually: Block 0 is Current, Block 1 is Initial, Block 2 is Answer Key
+    # We always want the last one as the Answer Key.
+    pattern = r'<PACKETTRACER5>.*?</PACKETTRACER5>'
+    pt5_blocks = re.findall(pattern, content, flags=re.DOTALL)
+
+    if len(pt5_blocks) < 2:
+        print("[-] Error: Could not find both Student and Answer Key networks in the XML.")
         return False
 
-    # 1. Copy DEVICES from Block 3 (Answer Key) to Block 1 (Student Current)
-    answer_devices_match = re.search(r'(<DEVICES>.*?</DEVICES>)', blocks[6], re.DOTALL)
-    if not answer_devices_match:
-        print("[-] Error: Could not find DEVICES in Answer Key.")
-        return False
-    answer_devices = answer_devices_match.group(1)
-    new_block1 = re.sub(r'<DEVICES>.*?</DEVICES>', answer_devices, blocks[2], flags=re.DOTALL)
+    student_block = pt5_blocks[0]
+    answer_block = pt5_blocks[-1] # Use the last block as the answer key
 
-    # 2. Copy LINKS (The Wires)
-    answer_links_match = re.search(r'(<LINKS>.*?</LINKS>)', blocks[6], re.DOTALL)
-    if not answer_links_match:
-        print("[-] Error: Could not find LINKS in Answer Key.")
-        return False
-    answer_links = answer_links_match.group(1)
-    new_block1 = re.sub(r'<LINKS[^>]*>.*?</LINKS>|<LINKS\s*/>', answer_links, new_block1, flags=re.DOTALL)
-    
-    new_content = blocks[0] + blocks[1] + new_block1 + blocks[3] + blocks[4] + blocks[5] + blocks[6] + "".join(blocks[7:])
+    # Completely overwrite the Student Block with the Answer Key Block.
+    # This copies everything: devices, links, configs, and grading metadata.
+    new_content = content.replace(student_block, answer_block, 1)
     
     with open(output_xml, 'w', encoding='utf-8') as f:
         f.write(new_content)
